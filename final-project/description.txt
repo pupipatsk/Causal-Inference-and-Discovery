@@ -11,3 +11,92 @@ Please answer the following questions and explain in detail how you come up with
 4. Does alcohol factor into survivability given the dataset? (5%)
 5. Does the hospital affect the survivability? (10%)
 6. Any other interesting information you can gain from this dataset? (5%)
+
+
+---
+
+
+## Final Project Description: Causal Inference on Road Accident Survivability
+
+**Dataset:** [Road accidents list from Y51–Y58 festival period, Thailand](https://data.go.th/dataset/item_7d61f508-d2e1-4f0c-8408-dfde29f111f5)
+
+### Objective:
+
+To perform causal inference and discovery on road accident data, focusing on factors that influence survivability. The project utilizes principles from Pearlian causality and structural causal models (SCMs), leveraging tools such as causal DAGs, do-calculus, covariate adjustment, and counterfactual analysis. The central goal is to quantify effects and answer counterfactual questions based on observational data.
+
+---
+
+### Research Questions and Goals:
+
+#### 1. **What factors matter the most to the survivability of the person in the accident? (10%)**
+
+We aim to identify the strongest causal predictors of survivability (e.g., age, vehicle type, hospital response time) using:
+
+* Causal Discovery methods (e.g., PC or GES algorithm via `gCastle`)
+* DAG construction with expert knowledge and statistical tests
+* Variable importance assessment via interventional or counterfactual impact
+
+#### 2. **How much does helmet help survivability in motorcycle accidents? (5%)**
+
+To estimate the causal effect of wearing a helmet:
+
+* Define treatment: `Helmet = 1` vs `Helmet = 0`
+* Estimate: $P(\text{Survive} \mid do(\text{Helmet} = 1)) - P(\text{Survive} \mid do(\text{Helmet} = 0))$
+* Control for confounding variables (e.g., speed, time of accident) via back-door adjustment or propensity score matching
+
+#### 3. **How much does seatbelt help survivability in car accidents? (5%)**
+
+Analogous to the helmet analysis, we:
+
+* Define the treatment: `Seatbelt = 1`
+* Use DoWhy or EconML to estimate the Average Treatment Effect (ATE)
+* Adjust for potential confounders (e.g., crash type, driver behavior)
+
+#### 4. **Does alcohol factor into survivability given the dataset? (5%)**
+
+We assess the effect of alcohol consumption on fatality risk:
+
+* Model: $P(\text{Survive} \mid do(\text{Alcohol} = 1))$
+* Instrumental variables or covariate adjustment used to mitigate confounding
+* Use of counterfactual inference to estimate individual-level impact
+
+#### 5. **Does the hospital affect the survivability? (10%)**
+
+To assess the causal impact of hospital response:
+
+* Consider `Hospital_ID`, `Arrival_Time`, `Treatment_Time` as features
+* Use causal DAGs to evaluate if hospitals have direct causal links to outcome
+* If possible, assess transportability between hospitals using domain adaptation techniques
+
+#### 6. **Any other interesting information you can gain from this dataset? (5%)**
+
+We explore heterogeneous treatment effects (HTEs), subgroup-specific risks (e.g., based on age, region, time), or unexpected causal pathways using:
+
+* Meta-learners (S-learner, T-learner, X-learner)
+* Uplift modeling to identify population segments that benefit most from interventions (e.g., public safety campaigns)
+
+---
+
+### Methodological Foundation:
+
+Based on:
+
+* *“Causal Inference and Discovery in Python”* by Aleksander Molak
+* *“The Book of Why”* by Judea Pearl
+* Lecture content on the Ladder of Causation, do-calculus, d-separation, adjustment sets, and front-door criteria
+
+Key tools:
+
+* **DoWhy** for causal effect estimation and refutation
+* **EconML** for treatment effect heterogeneity
+* **gCastle** for causal discovery via graphical models
+* **Pandas/Scikit-learn** for preprocessing and modeling
+
+---
+
+### Deliverables:
+
+* DAGs representing causal assumptions
+* Jupyter notebooks implementing causal queries
+* Interpretations of average and conditional treatment effects
+* Documentation of assumptions, methods, and limitations

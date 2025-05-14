@@ -1,0 +1,132 @@
+Here’s a recipe for carrying out your “Road accidents Y51–58” final project using both causal inference and causal discovery. You can adapt these steps to whatever tools you prefer (e.g. DoWhy/EconML, Causal-learn/gCastle, or your own code):
+
+---
+
+## 1. Define your variables & outcome
+
+* **Outcome**: survivability (e.g. survived = 1, killed = 0).
+* **Treatment/factors of interest**:
+
+  1. Helmet use (motorcycles)
+  2. Seat-belt use (cars)
+  3. Alcohol involvement
+  4. Hospital (which hospital you go to)
+* **Other covariates** (potential confounders): age, gender, vehicle type, accident severity (speed, collision type), time of day, location, road conditions, etc.
+
+---
+
+## 2. Exploratory data analysis
+
+1. **Load & clean** the dataset, handle missingness, encode categorical variables.
+2. **Univariate summaries**: counts, survival rates by factor.
+3. **Pairwise associations** (e.g. χ²/t-tests, correlations) to spot obvious confounding (e.g. if helmet = 1 riders tend to be younger).
+
+---
+
+## 3. Causal DAG specification (Pearlian approach)
+
+1. **Sketch a DAG** encoding your assumptions for how all variables relate (e.g. age → helmet use; speed → survival; hospital choice ← severity → survival; alcohol → speed → injury, etc.)&#x20;
+2. **Check for back-door paths**: for each factor (e.g. helmet → survival), identify a minimal adjustment set Z that “blocks” all non-causal paths (Chapter 6) .
+3. If you suspect **mediators** (e.g. alcohol → speed → survival), consider front-door sets.
+
+---
+
+## 4. Estimand identification
+
+For each question, write the causal query:
+
+* Helmet effect:
+
+  $$
+    \text{ACE}_{\text{helmet}}
+    \;=\;
+    \mathbb{E}\bigl[\text{survival}\mid\!do(\text{helmet}=1)\bigr]
+    -\,
+    \mathbb{E}\bigl[\text{survival}\mid\!do(\text{helmet}=0)\bigr].
+  $$
+* Analogous expressions for seat-belt, alcohol, hospital, etc.&#x20;
+
+Then, using your DAG, express each ACE via adjustment formulas:
+
+$$
+  \mathbb{E}\bigl[Y\mid do(X)\bigr]
+  =\!\sum_{z\in Z}
+  \mathbb{E}\bigl[Y\mid X,z\bigr]\;\Pr(z).
+$$
+
+---
+
+## 5. Estimate causal effects
+
+1. **Propensity-score methods** (PSM, IPW): match or weight on $\Pr(X=1\mid Z)$ to balance confounders .
+2. **Meta-learners** (S-, T-, X-learners): fit conditional outcome models with treatment indicator .
+3. **Doubly robust** (DR-learner) or **Double ML** for extra robustness .
+4. **Refutation tests** (placebo treatments, random subset) to check sensitivity .
+
+In Python you can use DoWhy/EconML:
+
+```python
+from dowhy import CausalModel
+model = CausalModel(
+    data=df,
+    treatment='helmet',
+    outcome='survived',
+    common_causes=['age','speed','alcohol',…],  # your adjustment set
+    graph="digraph{…your DAG…}"
+)
+est = model.estimate_effect(model.identify_effect(), method_name="backdoor.propensity_score_matching")
+```
+
+---
+
+## 6. Causal discovery for “anything else interesting?”
+
+1. **Run constraint-based** (PC/FCI) and/or **score-based** (GES) algorithms on your data to learn parts of the DAG .
+2. **Inspect new edges**—maybe time-of-day or road-condition variables pop up as strong parents of survival.
+3. Incorporate any credible new links into your analysis above.
+
+Libraries:
+
+* **Causal-learn** for PC, GES, FCI
+* **gCastle** for LiNGAM, ANM, gradient-based (DECI)
+
+---
+
+## 7. Hospital effect (multi-site inference)
+
+* View **hospital** as a “treatment.”
+* Use **instrumental variables** if you think there’s unmeasured confounding (e.g. distance to hospital → hospital choice; distance ⫫ survival except thru hospital) .
+* Or treat hospital as a random effect in a mixed model alongside back-door adjustment.
+
+---
+
+## 8. Validation & robustness
+
+* **Hold-out** a test set.
+* **Check overlap** (positivity): ensure for each confounder pattern you observe both treated and untreated.
+* **Sensitivity analysis**: e.g. Rosenbaum bounds, refutation.
+
+---
+
+## 9. Report & visualize
+
+* **Tables** of estimated ACEs with 95 % CIs for helmet, seat-belt, alcohol, hospital.
+* **DAG plot** showing final causal graph.
+* **Balance diagnostics** (propensity score distributions).
+* **Discovery results** (learned graph adjacency).
+
+---
+
+### Tips & references
+
+* Follow the **four-step causal workflow**:
+
+  1. Model (DAG)
+  2. Identify (estimand)
+  3. Estimate (PSM/IPW/meta-learner)
+  4. Refute (placebo, subset)&#x20;
+* For **causal discovery**, see gCastle/
+  Causica tutorials .
+* Always **document** your assumptions—your DAG is a key artifact.
+
+Good luck—this structure will get you a solid, transparent analysis answering each of the six project questions through the twin lenses of causal inference and discovery!

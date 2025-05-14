@@ -1,0 +1,137 @@
+Here’s what your pipeline has produced and what it means at each step:
+
+---
+
+## 1. Data cleaning & labeling
+
+* **Duplicates removed:** 1 186 records dropped, leaving 213 764.
+* **Age = 0 removed:** another 3 912 records dropped → 209 852 remain.
+* **Survival label (“survived”=1 if “ทุเลา/หาย”):** 206 365 survivors vs. 3 487 non-survivors (≈98.3% survival).
+
+**What this tells us**
+The vast majority of injured patients survived, so all effect sizes will be small, and class imbalance is severe.
+
+---
+
+## 2. Q1: Top 5 factors for survivability (Random Forest importances)
+
+1. Age (0.301)
+2. Hour of accident (0.220)
+3. Day of month (0.115)
+4. Counterparty vehicle type (0.094)
+5. Alcohol use (0.057)
+
+**Interpretation**
+Age is the strongest predictor, then time of day and date within the festival (early/late), followed by what the other vehicle was and whether the injured had been drinking.
+
+---
+
+## 3. Q2: Helmet effect in motorcycle accidents
+
+* **ATE (DoWhy, PSM):** +0.0060
+* **Naïve difference-in-means:** +0.0053
+
+**Interpretation**
+Wearing a helmet is estimated to increase survival probability by about 0.5–0.6 percentage points after covariate adjustment.
+
+---
+
+## 4. Q3: Seatbelt effect in car accidents
+
+* **ATE:** +0.0102
+* **Naïve difference:** +0.0082
+
+**Interpretation**
+Seatbelt use is estimated to increase survival by about 0.8–1.0 pp.
+
+---
+
+## 5. Q4: Alcohol’s effect on survival
+
+* **ATE (PSM):** –0.0033
+
+**Interpretation**
+Drinking around the time of the crash appears to *decrease* survival by \~0.3 pp.
+
+---
+
+## 6. Q5: Hospital “effect” on survivability
+
+* **Std dev of (observed – expected) survival rates across hospitals:** 0.053
+
+**Interpretation**
+Hospitals differ in survival rates by about ±5 pp around what you’d predict from age, sex, vehicle, road, etc.
+
+---
+
+## 7. Q6: Hourly survival rates
+
+| Hour | Survival rate |
+| :--: | :-----------: |
+|   0  |     0.9771    |
+|   1  |     0.9766    |
+|   2  |     0.9771    |
+|   3  |     0.9689    |
+|   4  |     0.9610    |
+|   5  |     0.9636    |
+|   6  |     0.9752    |
+|   7  |     0.9825    |
+|   8  |     0.9869    |
+|   9  |     0.9857    |
+|  10  |     0.9878    |
+|  11  |     0.9874    |
+|  12  |     0.9885    |
+|  13  |     0.9869    |
+|  14  |     0.9857    |
+|  15  |     0.9856    |
+|  16  |     0.9880    |
+|  17  |     0.9877    |
+|  18  |     0.9834    |
+|  19  |     0.9833    |
+|  20  |     0.9809    |
+|  21  |     0.9826    |
+|  22  |     0.9802    |
+|  23  |     0.9816    |
+
+![Survival Rate by Hour of Day](attachment\:c2831c11-3250-4a0f-8ee6-e1986c52f30c.png)
+
+**Interpretation**
+Survival dips in the early-morning hours (4–5 AM) and peaks around midday (10–12 PM).
+
+---
+
+## Are these results “correct”?
+
+Overall, the *patterns* you’ve uncovered are plausible and in line with what one might expect:
+
+* **Age** and **time of day** really do dominate many trauma‐survival studies.
+* Helmets and seatbelts show small but measurable boosts to survival probability.
+* Alcohol worsens outcomes.
+* There is notable hospital‐to‐hospital variation (even after adjusting for case mix).
+* Night‐time crashes carry a higher risk.
+
+### A few methodological caveats
+
+1. **Month mapping bug**
+   You’ve mapped days > 15 → month = 12 (December) instead of 1 (January). That likely confounds your “month” variable.
+2. **Pandas SettingWithCopyWarning**
+   Several chained assignments (e.g. creating `month`, dropping columns from a slice) can lead to silent bugs. Better to use `.loc` on the original DataFrame.
+3. **Treatment encoding**
+   Label-encoding high-cardinality categoricals (e.g. road names) can introduce spurious orderings. One-hot or target encoding would be safer for confounder control.
+4. **Propensity-score matching issues**
+
+   * Convergence warnings from `LogisticRegression` suggest scaling or more iterations are needed.
+   * PSM alone can be unstable if common‐support is weak; you may want to check overlap, try inverse‐probability weighting, or doubly‐robust estimators.
+5. **Unmeasured confounding**
+   You’ve adjusted for many covariates, but speed, pre‐existing conditions, victim’s posture, crash dynamics, etc., aren’t in the data. Estimates will remain biased if those matter.
+
+---
+
+### Next steps to bolster confidence
+
+* **Refutation tests** (DoWhy’s `model.refute_estimate`) to check sensitivity to unobserved confounding.
+* **Alternative estimators** (IPW, Doubly Robust, Causal Forest) to see if ATEs are stable.
+* **Better covariate engineering** (e.g. group roads by type, include weather, traffic volume if available).
+* **Fix month variable** and re-run importances and seasonality checks.
+
+With these tweaks, your causal claims will stand on even firmer ground. Overall, you’re on the right track — your results make sense, but a few coding and methodological fixes will make them bulletproof.
