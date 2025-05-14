@@ -165,4 +165,6 @@ cython_debug/
 
 # --- MacOS --- #
 *.DS_Store
-final-project/data.xlsx
+
+
+# --- Custom --- #
