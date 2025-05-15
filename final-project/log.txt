@@ -135,3 +135,139 @@ Overall, the *patterns* you’ve uncovered are plausible and in line with what o
 * **Fix month variable** and re-run importances and seasonality checks.
 
 With these tweaks, your causal claims will stand on even firmer ground. Overall, you’re on the right track — your results make sense, but a few coding and methodological fixes will make them bulletproof.
+
+
+
+
+
+Duplicates: 1186
+After dedup: 213764
+Age 0 count: 3912
+After age filter: 209852
+Survival distribution:
+ survived
+1    206365
+0      3487
+Name: count, dtype: int64
+
+=== Q1: Feature Importances ===
+Top 20 factors affecting survivability:
+ day_of_month                   0.267986
+hour                           0.134792
+อายุ                           0.086519
+การดื่มสุรา_ไม่ทราบ            0.068351
+sex                            0.033993
+ถนนที่เกิดเหตุ_ทางหลวง         0.030827
+รถผู้บาดเจ็บ_ปิคอัพ            0.024408
+ถนนที่เกิดเหตุ_ในเมือง         0.022526
+รถคู่กรณี_ปิคอัพ               0.021277
+มาตรการ_ไม่ทราบ                0.020664
+สถานะ_ผู้ชับขี่                0.020619
+รถคู่กรณี_รถเก๋ง/แท็กซี่       0.020450
+มาตรการ_ไม่ใส่                 0.019593
+สถานะ_ผู้โดยสาร                0.018583
+การดื่มสุรา_ไม่ดื่ม            0.018096
+รถผู้บาดเจ็บ_รถเก๋ง/แท็กซี่    0.017981
+รถผู้บาดเจ็บ_รถจักรยาน         0.016421
+รถคู่กรณี_ไม่มี/ล้มเอง         0.015624
+รถคู่กรณี_ไม่ทราบ              0.015082
+รถคู่กรณี_รถบรรทุก             0.014999
+dtype: float64
+
+=== Q2: Helmet Effect ===
+Starting causal effect estimation...
+Treatment variable: helmet
+Outcome variable: survived
+Number of confounders: 7
+Dropping missing values...
+Remaining samples after dropping NA: 167302
+Creating causal model...
+Identifying causal effect...
+Estimating effect using PSM...
+helmet ATE: 0.0113
+Running refutation tests...
+1. Placebo treatment refutation:
+Refute: Use a Placebo Treatment
+Estimated effect:0.011332799368806112
+New effect:0.00017644738257761405
+p value:0.8999999999999999
+
+2. Random common cause refutation:
+Refute: Add a random common cause
+Estimated effect:0.011332799368806112
+New effect:0.011332799368806115
+p value:1.0
+
+Computing naive difference in means...
+Naive diff-in-means: 0.0075
+Causal effect estimation complete.
+
+=== Q3: Seatbelt Effect ===
+Starting causal effect estimation...
+Treatment variable: seatbelt
+Outcome variable: survived
+Number of confounders: 7
+Dropping missing values...
+Remaining samples after dropping NA: 19587
+Creating causal model...
+Identifying causal effect...
+Estimating effect using PSM...
+seatbelt ATE: 0.0746
+Running refutation tests...
+1. Placebo treatment refutation:
+Refute: Use a Placebo Treatment
+Estimated effect:0.07459028947771482
+New effect:0.009035074283963855
+p value:0.72
+
+2. Random common cause refutation:
+Refute: Add a random common cause
+Estimated effect:0.07459028947771482
+New effect:0.07459028947771482
+p value:1.0
+
+Computing naive difference in means...
+Naive diff-in-means: 0.0191
+Causal effect estimation complete.
+Duplicates: 1186
+After dedup: 213764
+Age 0 count: 3912
+After age filter: 209852
+Survival distribution:
+ survived
+1    206365
+0      3487
+Name: count, dtype: int64
+
+=== Q4: Alcohol Effect ===
+Starting causal effect estimation...
+Treatment variable: alcohol
+Outcome variable: survived
+Number of confounders: 17
+Dropping missing values...
+Remaining samples after dropping NA: 209851
+Creating causal model...
+Identifying causal effect...
+Estimating effect using PSM...
+alcohol ATE: 0.0060
+Running refutation tests...
+1. Placebo treatment refutation:
+Refute: Use a Placebo Treatment
+Estimated effect:0.006018556023083045
+New effect:0.00039408913943702906
+p value:0.96
+
+2. Random common cause refutation:
+Refute: Add a random common cause
+Estimated effect:0.006018556023083045
+New effect:0.006018556023083047
+p value:1.0
+
+Computing naive difference in means...
+Naive diff-in-means: 0.0038
+Causal effect estimation complete.
+
+=== Q5: Hospital Effect ===
+Hospital survival difference std: 0.05340669455562482
+
+=== Q6: Hourly Survival ===

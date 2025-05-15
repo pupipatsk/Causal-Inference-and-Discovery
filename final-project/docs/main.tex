@@ -1,0 +1,116 @@
+\documentclass[a4paper]{article}
+\usepackage{amsmath}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\title{(draft) Casual Inference and Discovery: Final Project Report}
+\author{Pupipat Singkhorn}
+\date{May 2025}
+
+\begin{document}
+
+\maketitle
+
+Dataset: Road accidents list from Y51-58 festival period. \url{https://data.go.th/dataset/item_7d61f508-d2e1-4f0c-8408-dfde29f111f5}
+
+\section*{1. Top Factors Affecting Survivability}
+Q: What factors matter the most to the survivability of the person in the accident?\
+
+\textbf{Analysis:} Trained a Random Forest on
+
+\begin{quote}
+Age, sex, day\_of\_month, month, hour, road type, status (passenger/pedestrian), injured vehicle, counterpart vehicle, safety measure, and alcohol use
+\end{quote}
+
+\noindent and extracted feature importances.
+
+\textbf{Top 5 Predictors:}
+\begin{enumerate}
+    \item \textbf{Age} (0.328)
+    \item \textbf{Hour of day} (0.232)
+    \item \textbf{Day of month} (0.100)
+    \item \textbf{Unknown alcohol use} (0.044)
+    \item \textbf{Sex} (0.021)
+\end{enumerate}
+
+\textbf{Interpretation:} Older victims have markedly lower survival rates, followed by the time of day (possibly reflecting traffic or light conditions), then day-of-month effects (first vs. second half of January festival), with unknown alcohol status and gender playing smaller but non-negligible roles.
+
+\section*{2. Helmet Effect in Motorcycle Accidents}
+Q: How much does helmet help survivability in motorcycle accident?
+
+\begin{itemize}
+    \item \textbf{Sample:} Motorcyclists only, excluding ``unknown'' measures
+    \item \textbf{Treatment:} helmet = 1 if ``wore helmet''
+    \item \textbf{Method:} DoWhy propensity-score matching
+    \item \textbf{Estimate (ATE):} +0.0025 (i.e. +0.25 pp absolute increase in survival)
+    \item \textbf{Naïve diff-in-means:} +0.0076 (0.76 pp)
+    \item \textbf{Robustness checks:} Placebo treatment $p = 0.84$; random common cause $p = 1.0$
+\end{itemize}
+
+\textbf{Interpretation:} Wearing a helmet yields a small but positive survival benefit ($\sim$0.25 percentage points) after adjusting for confounders, though the naïve estimate overstates it (0.76 pp) by failing to account for selection bias.
+
+\section*{3. Seatbelt Effect in Car Accidents}
+Q: How much does seatbelt help survivability in car accident?
+
+\begin{itemize}
+    \item \textbf{Sample:} Cars (sedan/taxi, pickup, van), excluding unknown measures
+    \item \textbf{Treatment:} seatbelt = 1 if ``wore seatbelt''
+    \item \textbf{Method:} DoWhy propensity-score matching
+    \item \textbf{Estimate (ATE):} +0.0196 (1.96 pp absolute increase)
+    \item \textbf{Naïve diff-in-means:} +0.0199 (1.99 pp)
+    \item \textbf{Robustness checks:} Placebo $p = 0.93$; random common cause $p = 1.0$
+\end{itemize}
+
+\textbf{Interpretation:} Seatbelt use increases survival by about 2 percentage points. Adjusted and naïve estimates are nearly identical, suggesting limited confounding in this subset.
+
+\section*{4. Alcohol's Impact on Survivability}
+Q: Does alcohol factor into survivability given the dataset?
+
+\begin{itemize}
+    \item \textbf{Sample:} All vehicles, excluding ``unknown'' alcohol status
+    \item \textbf{Treatment:} alcohol = 1 if ``drank''
+    \item \textbf{Method:} DoWhy propensity-score matching
+    \item \textbf{Estimate (ATE):} +0.0064 (0.64 pp)
+    \item \textbf{Naïve diff-in-means:} +0.0042 (0.42 pp)
+    \item \textbf{Robustness checks:} Placebo $p = 0.70$; random common cause $p = 1.0$
+\end{itemize}
+
+\textbf{Interpretation:} Surprisingly, after adjusting for confounders, alcohol consumption appears to increase survival by $\sim$0.6 pp—likely reflecting residual confounding or ``drinker'' correlations (e.g. drinking happens on safer roads/times). The small effect and non-significant refutations ($p > 0.05$) counsel caution.
+
+\section*{5. Hospital Effect on Survivability}
+Q: Does the hospital affect the survivability?
+
+\begin{itemize}
+    \item \textbf{Model:} Logistic regression predicting survival from demographics, road and crash factors
+    \item \textbf{Metric:} For each hospital (by ID), compare \textbf{observed} vs. \textbf{expected} survival rate
+    \item \textbf{Result:} Standard deviation of hospital-level survival difference = \textbf{0.0538}
+\end{itemize}
+
+\textbf{Interpretation:} Hospitals differ in their mortality outcomes by roughly $\pm$5 pp (one standard-deviation spread). This suggests meaningful variability in care quality or patient mix across hospitals.
+
+\section*{6. Hour-of-Day Survival Patterns (Exploratory)}
+Q: Any other interesting information you can gain from this dataset?
+
+\begin{itemize}
+    \item \textbf{Plot:} Survival rate by hour (0--23) shows a trough around 4 am ($\sim$96.2\%) and a peak around 12 noon--1 pm ($\sim$98.9\%), then a gradual decline into the evening.
+\end{itemize}
+
+\textbf{Insight:} Very early-morning accidents (around dawn) have the lowest survival—perhaps reflecting emergency-response delays or impaired visibility—whereas midday incidents see the highest survival.
+
+\section*{Overall Conclusions}
+
+\begin{itemize}
+    \item \textbf{Demographics} (age, sex) and \textbf{temporal factors} (hour/day) dominate survival risk.
+    \item \textbf{Protective measures} (helmets, seatbelts) show modest but real increases in survival.
+    \item \textbf{Alcohol} effects are confounded and require deeper investigation.
+    \item \textbf{Hospital performance} varies substantially, indicating opportunities for targeted quality improvements.
+    \item \textbf{Time-of-day} patterns point to resource-allocation or public-safety messaging opportunities during vulnerable periods (e.g. pre-dawn hours).
+\end{itemize}
+
+This causal analysis blends machine-learning--driven discovery (feature importances) with formal causal inference (DoWhy estimands and refutation tests), offering both \textbf{what} matters and \textbf{how much} it matters to accident survivability.
+
+\section*{Appendix}
+
+\end{document}
